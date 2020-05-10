@@ -1,0 +1,83 @@
+---
+title: "Untitled"
+author: "Nikhila"
+date: "April 19, 2019"
+output:
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+install.packages("ggplot2", repos='http://cloud.r-project.org')
+install.packages("mclust", repos='http://cloud.r-project.org')
+install.packages("cluster", repos='http://cloud.r-project.org')
+install.packages("tidyverse")
+install.packages("data.table")
+
+library(ggplot2)
+library(mclust)
+library(cluster)
+library(tidyverse)
+library(data.table)
+library(reshape2)
+library("dplyr")
+library(corrplot)
+
+
+Airbnb <- read_csv(file="listings.csv")
+is.tibble(Airbnb)
+view(Airbnb)
+
+sum(is.na(Airbnb))
+Airbnb = na.omit(Airbnb)
+
+summary(Airbnb)
+dim(Airbnb)
+
+fivenum(Airbnb$number_of_reviews)
+fivenum(Airbnb$longitude)
+fivenum(Airbnb$availability_365)
+
+#
+Availability <- Airbnb$availability_365
+hist(Availability,col="pink")
+
+#
+ggplot(data=Airbnb, aes(x=property_type, y=price, fill=room_type)) +
+  geom_bar(stat="identity", position=position_dodge())+ facet_wrap(~room_type)+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  labs( x = "Type of Property",
+        title="Property Vs Price",
+        y= "Price")+
+  theme(plot.title=element_text(hjust=0.5))
+
+#
+ggplot(Airbnb,aes(host_response_rate,number_of_reviews)) +
+   geom_point(aes(color = room_type))+
+   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  labs( x = "Host response rate",
+        title="Response rate Vs Reviews",
+        y= "Number of reviews")+
+  theme(plot.title=element_text(hjust=0.5)) 
+
+#
+cor(Airbnb$price,Airbnb$number_of_reviews)
+cor(Airbnb$price,Airbnb$availability_365)
+
+cor.test(Airbnb$price,Airbnb$number_of_reviews)
+
+correlation <- cor(Airbnb[,sapply(Airbnb,is.numeric)])
+correlation
+
+corrplot(correlation,number.cex = .7,col=colorRampPalette(c("blue","white","green"))(200)) 
+# 
+model1 <- lm(Airbnb$price~Airbnb$accommodates)
+model1
+summary(model1)
+
+windows(width=7, height=9)
+par(mfrow=c(2,2))
+plot(model1,las=1)
